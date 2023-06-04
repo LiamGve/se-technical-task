@@ -12,7 +12,6 @@ export const FavouriteButton: React.FC<IFavouriteButtonProps> = ({
   const { isLoggedIn } = useUser();
   const {
     favourites,
-    refetchFavourites,
     addToFavourites,
     removeFromFavourites,
   } = useFavourites();
@@ -31,7 +30,6 @@ export const FavouriteButton: React.FC<IFavouriteButtonProps> = ({
     } else {
       addToFavourites(saleId);
     }
-    refetchFavourites();
   };
 
   if (!isLoggedIn || !saleId) {

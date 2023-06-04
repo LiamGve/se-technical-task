@@ -2,6 +2,7 @@
   "name": "fe-takehome-task",
   "version": "0.1.0",
   "private": true,
+  "proxy": "http://localhost:8080",
   "dependencies": {
     "@apollo/client": "^3.7.7",
     "@testing-library/jest-dom": "^5.14.1",

@@ -1,7 +1,6 @@
-import { Context, createContext, useContext } from "react";
-import { IFavourite } from "../pages/Favourites/Favourites.interfaces";
-import React from "react";
-import { useUser } from "./UserContext";
+import React, {Context, createContext, useContext} from "react";
+import {IFavourite} from "../pages/Favourites/Favourites.interfaces";
+import {useUser} from "./UserContext";
 import axios from 'axios';
 
 interface IFavouritesContext {
@@ -43,42 +42,61 @@ export const FavouritesProvider: React.FC<IFavouritesProviderProps> = ({
   const [favourites, setFavourites] = React.useState<Array<IFavourite>>([]);
   const [idCounter, setIdCounter] = React.useState<number>(1);
 
-  if (userId !== prevUserId) {
-    setFavourites([]);
-    setPrevUserId(userId);
-  }
-
   const addToFavourites = React.useCallback(
     (saleId: string) => {
-      setIdCounter((id) => id + 1);
-      setFavourites((favourites) => [
-        ...favourites,
-        {
-          id: idCounter,
-          saleId,
-          userId,
-          dateCreated: new Date(),
-        },
-      ]);
+      axios
+        .post('/api/v1/favourites', {
+          userId: userId,
+          saleId: saleId
+        })
+        .then((response) => {
+          setIdCounter((id) => id + 1);
+          setFavourites((favourites) => [
+            ...favourites,
+            {
+              id: idCounter,
+              saleId,
+              userId,
+              dateCreated: response.data.createdDate,
+            },
+          ]);
+        })
+        .catch((error) => console.error(error));
     },
     [userId, idCounter]
   );
 
   const removeFromFavourites = React.useCallback(
     (saleId: string) => {
-      setFavourites((favourites) =>
-        favourites.filter(
-          (favourite) =>
-            !(favourite.saleId === saleId && favourite.userId === userId)
-        )
-      );
+      axios
+        .delete(`/api/v1/favourites/${userId}?saleId=${saleId}`)
+        .then((response) => {
+          setFavourites((favourites) =>
+            favourites.filter(
+              (favourite) =>
+                !(favourite.saleId === saleId && favourite.userId === userId)
+            )
+          );
+        })
+        .catch((error) => console.error(error));
     },
     [userId]
   );
 
   const refetchFavourites = React.useCallback(() => {
-    console.log("Pretending to refetch data");
-  }, []);
+    axios
+      .get(`/api/v1/favourites/${userId}`)
+      .then((response) => setFavourites((favourites) => response.data as Array<IFavourite>))
+      .catch((error) => console.error(error));
+  }, [userId]);
+
+  if (userId !== prevUserId) {
+    axios
+      .get(`/api/v1/favourites/${userId}`)
+      .then((response) => setFavourites((favourites) => response.data as Array<IFavourite>))
+      .catch((error) => console.error(error));
+    setPrevUserId(userId);
+  }
 
   return (
     <FavouritesContext.Provider
